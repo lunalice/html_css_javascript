@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ja">
+<!-- CSSとかJQuaryとか初期設定とかコメントゾーン -->
+<head>
+	<title>お茶</title>
+	<meta carset="utf-8">
+	<!-- javaソースゾーン -->
+	<Script langiage="JavaScript">
+		//ウィンドウ起動時処理：要調整 固定とかビジュアルをかっこよくする。
+		resize_window();
+		//ウィンドウ位置を指定する。HTAにてウィンドウのサイズ等々は固定されている。
+		//のちのち変数にしてresizeToするかもしれない。
+		function resize_window(){
+			window.resizeTo(225,130); //ウィンドウサイズ変更
+			window.moveTo(0,0); //左端へ移動
+		};
+	</Script>
+	
+	<!-- HTA特有設定（説明有でもうちっとテンプレ化したい） -->
+	<HTA:APPLICATION
+		APPLICATIONNAME="お茶"
+		ID="mainHTA"
+		VERSION="VL/001"
+		CAPTION=no
+		SHOWINTASKBAR =no
+		SCROLL=no
+		BORDER=none
+	/>
+	
+	<!-- jqueryソース指定(いつかローカル起動にする) -->
+	<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script> -->
+	
+	<!-- CSSゾーン -->
+	<style type="text/css"><!--
+	 body {
+		margin: 0;
+		padding: 0;
+		line-height:1.4;
+		color:#333;
+		font-family:Arial, sans-serif;
+		font-size:0.9em;
+		position: relative;
+		width: 100%;
+		height: 100%;
+	 } 
+	
+	<!-- インプットボックス装飾 -->
+	input{
+   		background-color: #ffffff; /* 背景は白 */
+   		border: 1px solid #7f9db9; /* 枠線は淡い青色 */
+   		font-size: 80%;
+	}
+	
+	<!-- 閉じるボタン装飾 -->
+	.shiny-button {
+	  display: inline-block;
+	  position: absolute;
+	  top: 5px;
+	  right: 5px;
+	  border-width: 1px;
+	  border-style: solid;
+	  text-transform: uppercase;
+	  text-decoration: none;
+	  line-height: 1.3;
+	  font-weight: normal;
+	  font-family: sans-serif;
+	  color: #FFFFFF;
+	  font-size: 12px;
+	  background-color: #332828;
+	  background-image: -webkit-linear-gradient(top, #362a2a 0%, #424242 48%, #332828 49%, #332828 82%, #433434 100%);
+	  background-image: -moz-linear-gradient(top, #362a2a 0%, #424242 48%, #332828 49%, #332828 82%, #433434 100%);
+	  background-image: -o-linear-gradient(top, #362a2a 0%, #424242 48%, #332828 49%, #332828 82%, #433434 100%);
+	  background-image: linear-gradient(top, #362a2a 0%, #424242 48%, #332828 49%, #332828 82%, #433434 100%);
+	  border-color: hsl(0, 0%, 18%);
+	  -webkit-box-shadow: inset 0 0 1px 1px #6f5757, 0 0 1px 3px rgba(0, 0, 0, 0.15);
+	  -moz-box-shadow: inset 0 0 1px 1px #6f5757, 0 0 1px 3px rgba(0, 0, 0, 0.15);
+	  box-shadow: inset 0 0 1px 1px #6f5757, 0 0 1px 3px rgba(0, 0, 0, 0.15);
+	  -webkit-text-shadow: 1px 1px 1px #000;
+	  -moz-text-shadow: 1px 1px 1px #000;
+	  -o-text-shadow: 1px 1px 1px #000;
+	  text-shadow: 1px 1px 1px #000;
+	  -webkit-border-radius: 0px;
+	  -moz-border-radius: 0px;
+	  border-radius: 0px;
+	  padding: 1.2000000000000001px 3px 1.2000000000000001px 3px;
+	}
+
+	.shiny-button strong {
+	  letter-spacing: 1px;
+	  font-size: 12px;
+	}
+
+	.shiny-button:hover {
+	  color: #FFFFFF;
+	  background-color: #3c2f2f;
+	  background-image: -webkit-linear-gradient(top, #3f3131 0%, #4a4a4a 48%, #3c2f2f 49%, #3c2f2f 82%, #4c3b3b 100%);
+	  background-image: -moz-linear-gradient(top, #3f3131 0%, #4a4a4a 48%, #3c2f2f 49%, #3c2f2f 82%, #4c3b3b 100%);
+	  background-image: -o-linear-gradient(top, #3f3131 0%, #4a4a4a 48%, #3c2f2f 49%, #3c2f2f 82%, #4c3b3b 100%);
+	  background-image: linear-gradient(top, #3f3131 0%, #4a4a4a 48%, #3c2f2f 49%, #3c2f2f 82%, #4c3b3b 100%);
+	  border-color: hsl(0, 0%, 21%);
+	  -webkit-box-shadow: inset 0 0 1px 1px #755c5c, 0 0 1px 3px rgba(0, 0, 0, 0.15);
+	  -moz-box-shadow: inset 0 0 1px 1px #755c5c, 0 0 1px 3px rgba(0, 0, 0, 0.15);
+	  box-shadow: inset 0 0 1px 1px #755c5c, 0 0 1px 3px rgba(0, 0, 0, 0.15);
+	  -webkit-text-shadow: 1px 1px 1px #030202;
+	  -moz-text-shadow: 1px 1px 1px #030202;
+	  -o-text-shadow: 1px 1px 1px #030202;
+	  text-shadow: 1px 1px 1px #030202;
+	}
+
+	.shiny-button:active {
+	  color: #FFFFFF;
+	  background-color: #2a2121;
+	  background-image: -webkit-linear-gradient(top, #241d1d 0%, #332828 100%);
+	  background-image: -moz-linear-gradient(top, #241d1d 0%, #332828 100%);
+	  background-image: -o-linear-gradient(top, #241d1d 0%, #332828 100%);
+	  background-image: linear-gradient(top, #241d1d 0%, #332828 100%);
+	  padding: 2.2px 3px 0.20000000000000018px 3px;
+	}
+	
+	<!-- タイトル -->
+	h4 { 
+		color: #000000; /* 背景は白 */
+		font-weight: normal;
+		font-size: 90%;
+		position: relative;
+		top: 10px;
+	}
+	 --></style>
+</head>
+
+<!-- ボディ設定UI・htmlとか VBSとJSの複合技で行く -->
+<body>
+
+<script type="text/vbscript">
+ Sub test()
+    With Application.FileDialog(msoFileDialogFolderPicker)
+        .Title = "フォルダ選択"
+        If .Show Then
+           MsgBox .SelectedItems(1)
+        End If
+    End With
+ End Sub
+</script>
+
+<Script language="JavaScript">
+	
+	var fs = new ActiveXObject("Scripting.FileSystemObject");
+	var currentDir = getDir();
+	//キーワード取得
+	var str = mainHTA.commandLine;
+	str = str.split(" ");
+	//nameKey[0]=名前 nameKey[1]=ログフォルダ
+	var nameKey = str[1].split("&");
+	window.onload = init;
+	
+	//初期化処理
+	function init(){
+		if (nameKey.length == 2) {
+			document.getElementById("namebox").innerText = nameKey[0];
+			document.getElementById("logfolder").innerText = nameKey[1];
+		}
+	}
+	
+	//カレントディレクトリ取得ロジックを書き込むのだ！
+	function getDir(){
+		//このファイルのUrl取得＋いらない項目を修正する。
+		var myPath = location.href.replace("file:","");
+		//さらにいらない項目を修正する。
+		myPath = myPath.replace("///","");
+		//ファイル名を消す処理 補足splitはいつもの reverse()はsplit配列を逆転させる 
+		//slice(x,y)文字要素をxからyまで取り出す、もう一回反転、配列をjoinで結合させるURLの出来上がり。
+		myPath = myPath.split("/").reverse().slice(1).reverse().join("/");
+		
+		return myPath;
+	}
+	
+	//フォルダ選択ダイアログ:テンプレ完成
+	function FolderSelectDilaog(){
+    	var sTitle  = "Log保存先の共有フォルダを選択して下さい。"; //やり取りLog取得
+    	var iOptions = "0"; //0x0240; // 新しいフォルダの作成を許可しない。
+    	var vRootFolder = ""; //ルートフォルダ
+    	var shell = new ActiveXObject( "Shell.Application" );
+    	var folder = shell.BrowseForFolder( 0, sTitle , iOptions , vRootFolder );
+    	return folder;
+	}
+
+	//フォルダ名取得処理：テンプレ完成。
+	function getFolder(){
+		var folder = FolderSelectDilaog(); //vbsopenfolder();
+		switch ( folder ){
+		//キャンセル処理
+		case null:
+		case "":
+			document.getElementById("logFolder").innerText = "";
+    		break;
+		default :
+			//ボタンを押してフォルダ名を取得する。
+			var oFolderItem = new Object;
+ 			oFolderItem = folder.Items().Item();
+    		document.getElementById("logFolder").innerText = oFolderItem.Path; //"\\\\Jad17060430\\共有フォルダー" //
+		}
+	}
+	
+	//名前入力画面:テンプレ
+	function getName(){
+		var name = window.prompt("ユーザー名を入力してください", "");
+		if (name != null){
+			document.getElementById("namebox").innerText = name;
+		}else{
+			document.getElementById("namebox").innerText = "";
+		}
+	}
+	
+	//別ウィンドウを開く:テンプレ
+	function roomWindowOpen(){
+		//名前と選択が空白でない事をチェック
+		var nameCheck = document.getElementById("namebox").value;
+		var logCheck = document.getElementById("logFolder").value;
+		if (nameCheck == "" || logCheck == ""){
+			alert("入力不備!!");
+		}else{
+			//テキスト読み込みウィンドウを開く引数を渡す
+			//var $arguments = new Array( nameCheck, logCheck );
+			//window.showModelessDialog("html/room.hta",$arguments,"dialogHeight: 225px; dialogWidth: 225px; dialogLeft: 0px; dialogTop: 0px; resizable=no; unadorned:no; status=no; edge:raised"); return false;
+			//シェルでrunすれば引数を渡すことができるらしい！！！！これや！！！
+			//ここは共有サーバーのテキストを読み書きする事を主目的とする。
+			//フォルダ作成
+			if (!fs.FolderExists(logCheck)){
+				fs.CreateFolder(logCheck);
+			}
+			//ファイル作成
+			if (!fs.FileExists(logCheck + "/logs.txt")){
+				var files = fs.CreateTextFile(logCheck + "/logs.txt");
+				files.close();
+			}
+			//解説、カレントディレクトリ＋決まった構成のサブhtaにキーを渡す素敵ロジック
+			//補足cmdで実行する為にエスケープシーケンスを使う。
+			var maincommand = currentDir + "\\sub\\room.hta" + " " + nameCheck + "&" + logCheck;
+			//シェルでmshta.exeを起動するぜ！引数は名前とログテキスト！
+			new ActiveXObject("WScript.Shell").Run("mshta " + maincommand);
+			//このウィンドウは閉じる。
+			window.close();
+		}
+	}
+</Script>
+
+	
+	<!-- UI構築ゾーンボタン固定 -->
+	<a href="" class="shiny-button" onClick="window.close(); return false;"><strong>×</strong></a>
+	<div class="mainform">
+	<form name="form">
+		<h4><span style="border:1px solid;">ちょっとしたテキスト共有アプリ</span></h4>
+		<table align="center">
+			<tr>
+				<td><input type="text" name="namebox" value="" onclick="" disabled="disabled"></td>
+				<td><input type="button" value="名前" onclick=getName()><br></td>
+			</tr>
+			<tr>
+				<td><input type="text" name="logFolder" value="" onclick="" disabled="disabled"></td>
+				<td><input type="button" value="選択" onclick=getFolder()><br></td>
+			</tr>
+			<tr>
+				<td></td>
+				<td><input type="button" value="入室" onclick=roomWindowOpen()><br></td>
+			</tr>
+		</table>
+	</form>	
+	</div>
+</form>
+</body>
+</html>
