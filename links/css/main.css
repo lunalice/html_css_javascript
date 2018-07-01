@@ -1,0 +1,68 @@
+body{
+ border: 2px solid #000000;
+ background-color: rgb(240,250,240);
+ background: url('../images/img6.jpg');
+ margin: 40px;
+}
+
+a{
+ text-decoration: none;
+ color: rgb(0,0,0);
+ font-size: 12px;
+}
+
+h1{
+ padding-left: 5%;
+ font-size: 25px;
+ border: 1px solid #000000;
+ background-color: rgb(255,200,200);
+ margin: auto;
+ clear: both;
+ opacity: 0.8;
+}
+
+input#url_input{
+ width: 40%;
+}
+
+input#url_title{
+ width: 20%;
+}
+
+input#file_name{
+ width: 50%;
+}
+
+ul{
+ margin: 5px;
+ list-style: none;
+ width: 50%;
+ float: left;
+}
+
+#info{
+ margin: 5px;
+ width: auto;
+ height: auto;
+ float: left;
+ border: 1px solid #000000;
+ background-color: rgb(255,230,255);
+ font-size: 12px;
+ opacity: 0.8;
+}
+
+li a:hover{
+ background-color: rgb(200,255,0);
+}
+
+textarea{
+ width: 100%;
+ box-sizing:border-box;
+ opacity: 0.8;
+}
+
+footer p{
+ margin: 0;
+ background-color: rgb(255,255,255);
+ opacity: 0.8;
+}

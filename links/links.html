@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ja">
+<meta charset="utf8">
+
+<head>
+<title>リンク集</title>
+<link rel="stylesheet" type="text/css" href="./css/main.css">
+</head>
+
+<body>
+<!-- タイトル -->
+<h1>リンク集</h1>
+<form id="inputbox">
+ <!-- リンク入力機能 -->
+ <input type="textarea" required placeholder="URL入力" id="url_input"/>
+ <input type="textarea" required placeholder="URLタイトル" id="url_title"/>
+ <input type="submit" value="登録" onclick="insertRecord();return false;"/>
+ <input type="submit" value="削除" onclick="deleatRecord();return false;"/>
+</form>
+<!-- テキストデータが挿入される -->
+<div class="boxA">
+ <ul id="url_list">
+ </ul>
+ <div id="info">
+  <p>
+   【リンク集】------------------------------------<br />
+   ☆./data/linkdata.txtでリンクを管理するツール<br />
+   html・ファイルのリンク、何でもどうぞ<br />
+   【URL入力＋URLタイトル⇒登録】リンクの追加<br />
+   【チェックボタン⇒削除】リンクの削除<br />
+   ---------------------------------------------<br />
+   【メモ】----------------------------------------<br />
+   【参照】選択したテキストの中身を展開する。<br />
+   【保存】フィールド内容を参照テキストへ保存<br />
+   ---------------------------------------------<br />
+   時間をかければ治せますが文字コードにバグ有<br />
+   ---------------------------------------------<br />
+  </p>
+  <p>
+  ☆リンク飛ばない場合↓認証して下さい。<br />
+  <a href="" target="_blank"></a><br />
+  <a href="" target="_blank"></a>
+  </p>
+ </div>
+</div>
+
+<!-- 幅を合わせる必要有 -->
+<h1>メモ帳</h1>
+<form name="textform">
+<input name="myfile" type="file" id="file_name"/>
+<input type="submit" value="保存" onClick="saveFile();return false;" />
+<textarea name="text_in_out" rows="20"></textarea>
+</form>
+
+<script type="text/javascript">
+// 位置取得用定数
+var str_path = location.pathname;
+var str_array = str_path.split("/");
+var url_list_path = str_path.replace(str_array.pop(),"").substring(1).replace("/","\/") + "data\/linkdata.txt"; // スクリプト実行フォルダの取得
+
+// オープン時、画面を描写する：完
+window.onload=function(){
+ readRecord();
+}
+
+// テキストエリア展開：完
+var xform = document.forms.textform;
+xform.myfile.addEventListener('change',function(e){
+ var result = e.target.files[0]; // ファイル一つ目選択
+ var render = new FileReader(); // ファイルリーダー
+ render.readAsText(result); // 読み込み確認
+ // 読み込み完了した際
+ render.addEventListener('load',function(){
+  // 読み込み結果出力
+  xform.text_in_out.textContent = render.result;
+ });
+});
+
+// テキストエリア保存：完成:文字コード問題
+function saveFile(){
+ // 入力チェック
+ if(document.getElementById("file_name").value == ""){
+  return;
+ }
+ var fs = new ActiveXObject("Scripting.FileSystemObject");
+ var file_path = fs.openTextFile(document.getElementById("file_name").value,2,false,0);
+ file_path.write(xform.text_in_out.textContent);
+ file_path.close();
+ alert("保存完了");
+}
+
+// linkの挿入機能
+function insertRecord(){
+ var errMsg = "";
+ if (isNull("url_input")){
+  errMsg = "urlを入力して下さい。\n";
+ }
+ 
+ if (isNull("url_title")){
+  errMsg = errMsg + "url_titleを入力して下さい。";
+ }
+ 
+ if(errMsg != ""){
+  alert(errMsg);
+  return;
+ }
+ // テキストに追記する。
+ var fs = new ActiveXObject("Scripting.FileSystemObject");
+ var file_path = fs.openTextFile(url_list_path,8,false,0); // 8は追記。
+ file_path.write(document.getElementById("url_input").value + "," + document.getElementById("url_title").value + ",");
+ file_path.close();
+ readRecord() // 画面更新
+}
+
+// nullチェック:完成
+function isNull(input_string){
+ var url_input = document.getElementById(input_string);
+ if (url_input.value == null || url_input.value == "") {
+  return true;
+ }
+ return false;
+}
+
+// linkの削除機能：完（リファクタリング出来るかも）
+function deleatRecord(){
+ // テキストを最初に取得しておく。
+ var fs = new ActiveXObject("Scripting.FileSystemObject"); 
+ // 1:読み込み 保存先取得：課題
+ var file_path = fs.openTextFile(url_list_path,1,false,0);
+ var string_array = file_path.ReadAll(); // 全て読み込み
+ file_path.close();
+ // url_listから要素を取得する。
+ var ul_list = document.getElementById("url_list").getElementsByTagName("input");
+ var chk_flag = false;
+ // チェックボックスにチェックが入ってるか確認する
+ for(var input_array in ul_list){
+  // 削除フラグがあるリンクをテキストから削除する。
+  if(ul_list[input_array].checked == true){
+   var link_data = document.getElementById("url_list").getElementsByTagName("a")[input_array].getAttribute("href"); // リンクの取得
+   var link_title = document.getElementById("url_list").getElementsByTagName("a")[input_array].innerHTML; // タイトル取得
+   string_array = string_array.replace(link_data + "," + link_title + "," , "");
+   chk_flag = true;
+  }
+ }
+ 
+ // 削除フラグがあった場合
+ if(chk_flag){
+  // テキスト書き込み
+  file_path = fs.openTextFile(url_list_path,2,false,0);
+  file_path.write(string_array);
+  file_path.close();
+  // 画面描写更新
+  readRecord();
+ }
+}
+
+// linkの読み込み機能：完
+function readRecord(){
+ // 描写リセット
+ document.getElementById("url_list").innerHTML="";
+ var fs = new ActiveXObject("Scripting.FileSystemObject"); 
+ // 1:読み込み 保存先取得：課題
+ var file_path = fs.openTextFile(url_list_path,1,false,0);
+ var string_array = file_path.ReadAll(); // 全て読み込み
+ var string_array = string_array.split(","); // 配列格納
+ // html描写処理
+ for (var i=0;i<string_array.length-1;i=i+2){
+  var li = document.createElement("li");
+  li.innerHTML = "<input type=\"checkbox\" /><a href=\"" + string_array[i] + "\" target=\"_blank\">" + string_array[i+1] + "</a>";
+  document.getElementById("url_list").appendChild(li);
+ }
+ file_path.close();
+}
+</script>
+<footer>
+ <center><p>Copyright (C)&nbsp; 2018 リンク集</p></center>
+</footer>
+</body>
+</html>
