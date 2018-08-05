@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ja">
+<meta charset="Shift_JIS">
+
+<head>
+<title>時給シミュレーター</title>
+<link rel="stylesheet" type="text/css" href="./css/main.css">
+</head>
+
+<body>
+<!-- タイトル -->
+<h1><center>時給シミュレーター</center></h1>
+<center>
+<table>
+ <form id="inputbox">
+  <tr>
+   <th>年齢</th>
+   <td><input type="text" required placeholder="何歳？" id="input_nen"/></td>
+   <td class="soe">歳</td>
+  </tr>
+  <tr>
+   <th>年収</th>
+   <td><input type="text" required placeholder="5000兆円？" id="input_money"/></td>
+   <td class="soe">万円</td>
+  </tr>
+  <tr>
+   <th>休日（年）</th>
+   <td><input type="text" required placeholder="何日？" id="input_rest"/></td>
+   <td class="soe">日</td>
+  </tr>
+  <tr>
+   <th>勤務時間（日）</th>
+   <td><input type="text" required placeholder="何時間？" id="input_dotime"/></td>
+   <td class="soe">時間</td>
+  </tr>
+  <tr>
+   <th>残業時間（年）</th>
+   <td><input type="text" required placeholder="何時間？" id="input_overtime"/></td>
+   <td class="soe">時間</td>
+  </tr>
+  <tr>
+   <th>通勤時間（片）</th>
+   <td><input type="text" required placeholder="何分？" id="input_rostime"/></td>
+   <td class="soe">分</td>
+  </tr>
+  <tr>
+   <th>家賃（月）</th>
+   <td><input type="text" required placeholder="何円？" id="input_rosmoney"/></td>
+   <td class="soe">円</td>
+  </tr>
+ </form>
+</table>
+<input type="submit" value="計算" id="zikko" onclick="simulate();return false;"/>
+</center>
+<!-- 結果を挿入するようにする -->
+<center><div id="result"><div></center>
+<center><table id="data_list"></table></center>
+
+<script type="text/javascript">
+// 位置取得用定数
+var str_path = location.pathname;
+var str_array = str_path.split("/");
+var input_list_path = str_path.replace(str_array.pop(),"").substring(1).replace("/","\/") + "data\/inputdata.txt"; // スクリプト実行フォルダの取得
+
+// オープン時、画面を描写する：完
+window.onload=function(){
+ readRecord();
+}
+
+// 時給計算したり損失金額を考えたり：完
+function simulate(){
+ var input_nen = document.getElementById("input_nen").value; // 年齢
+ var input_money = document.getElementById("input_money").value; // 年収
+ var input_rest = document.getElementById("input_rest").value; // 休日
+ var input_dotime = document.getElementById("input_dotime").value; // 勤務時間
+ var input_overtime = document.getElementById("input_overtime").value; // 残業時間
+ var input_rostime = document.getElementById("input_rostime").value; // 通勤時間
+ var input_rosmoney = document.getElementById("input_rosmoney").value; // 家賃
+ simulate_output(input_nen,input_money,input_rest,input_rest,input_dotime,input_overtime,input_rostime,input_rosmoney);
+ insertRecord(); //挿入処理
+}
+
+// 出力:完
+function simulate_output(input_nen,input_money,input_rest,input_rest,input_dotime,input_overtime,input_rostime,input_rosmoney){
+ var str_edit = "";
+ var result = exRound(keisan(input_money,input_rest,input_dotime,input_overtime),1); // 時給
+ str_edit = " " + input_nen + "歳さんの時給は <font color=\"red\">" + result + "</font> 円です。</br>";
+ str_edit = str_edit + "日給は <font color=\"red\">" + exRound((input_money * 10000) / activeDays(input_rest),1) + "</font> 円(稼働 <font color=\"red\">" + exRound((Number(input_dotime) + Number(input_overtime / activeDays(input_rest))),2) + "</font> 時間)です。</br>";
+ var result_ros = exRound(ros_keisan(result,input_rostime,input_rest),1); // 年間損失金額
+ str_edit = str_edit + "通勤時間は年間 <font color=\"red\">" + exRound(rosTime(input_rostime,input_rest),1);
+ str_edit = str_edit + "</font> 時間で <font color=\"red\">" + result_ros + "</font> 円消費しています。</br>";
+ var yachin = input_rosmoney * 12; //家賃
+ str_edit = str_edit + "家賃(<font color=\"red\">" + yachin + "</font>円)合わせ年間 <font color=\"red\">" + exRound(Number(result_ros) + yachin,1)  + "</font> 円消費しています。</br>";
+ str_edit = str_edit + "年間収入は (<font color=\"red\">" + input_money*10000 + "</font>円 - <font color=\"red\">" + exRound(Number(result_ros) + yachin,1) + "</font>円) = <font color=\"red\">" + (input_money*10000 - exRound(Number(result_ros) + yachin,1)) + "</font>(残業分<font color=\"red\">" + (input_overtime * result) + "</font>)円です！</br></br>";
+ str_edit = str_edit + "節約ヒント：家賃を上げて通勤時間を下げてみよう！</br>";
+ str_edit = str_edit + "※時間のみ想定している為、光熱費・食費等は考慮しておりません。</br>";
+ document.getElementById("result").innerHTML = str_edit;
+}
+
+// 指定した桁数まで四捨五入する：完
+function exRound(input_number,input_keta){
+ return Math.round(input_number*Math.pow(10,input_keta))/Math.pow(10,input_keta);
+}
+
+// 時給計算：完
+function keisan(input_money,input_rest,input_dotime,input_overtime){
+ var activeday = activeDays(input_rest); // 勤務日数
+ var day_money = (input_money * 10000) / activeday; // 日給
+ var day_time = Number(input_dotime) + (input_overtime / activeday); // 1日の稼働
+ return ( day_money / day_time ); // 時給
+}
+
+// 勤務日数：完
+function activeDays(rest){
+ return (365-rest);
+}
+
+// 年間損失金額計算：完
+function ros_keisan(result,input_rostime,input_rest){
+ return (result * rosTime(input_rostime,input_rest));
+}
+
+// 年間通勤時間：完
+function rosTime(input_rostime,input_rest){
+ return (input_rostime * 2 / 60) * (365 - input_rest);
+}
+
+// linkの挿入機能：完
+function insertRecord(){
+ // テキストに追記する。
+ var fs = new ActiveXObject("Scripting.FileSystemObject");
+ // 1:読み込み
+ var file_path = fs.openTextFile(input_list_path,1,false,0);
+ var string_array = file_path.AtEndOfStream ? "" : file_path.ReadAll(); // 全て読み込み
+ string_array = string_array.split(","); // 配列格納
+ file_path.close();
+ var createID = string_array.length != 0 ? 1 + (string_array.length - 1) / 8 : 1; // ユニークIDを振る
+ var file_path = fs.openTextFile(input_list_path,8,false,0); // 8は追記。
+ var str_record = createID + "," + document.getElementById("input_nen").value + "," + document.getElementById("input_money").value + "," + document.getElementById("input_rest").value + ",";
+ str_record = str_record + document.getElementById("input_dotime").value + "," + document.getElementById("input_overtime").value + "," + document.getElementById("input_rostime").value + ",";
+ str_record = str_record + document.getElementById("input_rosmoney").value + ","; // 家賃
+ file_path.write(str_record);
+ file_path.close();
+ readRecord() // 画面更新
+}
+
+// linkの削除機能：完
+function deleteRecord(){
+ // テキストを最初に取得しておく。
+ var fs = new ActiveXObject("Scripting.FileSystemObject"); 
+ // 1:読み込み
+ var file_path = fs.openTextFile(input_list_path,1,false,0);
+ var string_array = file_path.ReadAll(); // 全て読み込み
+ file_path.close();
+ var array_buff = string_array.split(",");
+ // data_listから要素を取得する。
+ var data_list = document.getElementById("data_list");
+ for (var i = 1;i<data_list.rows.length;i++){
+  // チェックボックス付けたものを削除する。
+  if (data_list.rows(i).getElementsByTagName("input")[0].checked == true){
+   data_list.rows(i).getElementsByTagName("input")[0].checked = false;
+   // 横ループ
+   var str_buff = "";
+   for(var j = 0;j<data_list.rows[i].cells.length;j++){
+    str_buff = str_buff + data_list.rows[i].cells[j].innerText + ",";
+   }
+   alert(str_buff + "を削除します。");
+   string_array = string_array.replace(str_buff, ""); // 削除処理
+   i = i - 1; // 位置調整
+  }
+ }
+ // テキスト書き込み
+ file_path = fs.openTextFile(input_list_path,2,false,0);
+ file_path.write(string_array);
+ file_path.close();
+ // 画面描写更新
+ readRecord();
+}
+
+// linkの読み込み機能:完
+function readRecord(){
+ // 描写リセット
+ document.getElementById("data_list").innerHTML="";
+ var fs = new ActiveXObject("Scripting.FileSystemObject"); 
+ // 1:読み込み
+ var file_path = fs.openTextFile(input_list_path,1,false,0);
+ var string_array = file_path.AtEndOfStream ? "" : file_path.ReadAll(); // 全て読み込み
+ var string_array = string_array.split(","); // 配列格納
+ // 項目作成
+ var tr = document.createElement("tr");
+ tr.innerHTML = "<tr><th></th><th>ID</th><th>年齢</th><th>年収</th><th>休日</th><th>勤務時間</th><th>残業時間</th><th>通勤時間</th><th>家賃</th></tr>"; // ヘッダー
+ document.getElementById("data_list").appendChild(tr);
+ // html描写処理
+ for (var i=0;i<string_array.length-1;i=i+8){
+  var tr = document.createElement("tr");
+  tr.innerHTML = "<input name=\"selectTarget\" type=\"radio\" onChange=\"checkAdd();\"/>";
+  // テーブル結合
+  for (var j=0;j<8;j++){
+   tr.innerHTML = tr.innerHTML + "<td>" + string_array[i+j] + "</td>";
+  }
+  tr.innerHTML = tr.innerHTML + "<input type=\"submit\" value=\"削除\" onclick=\"deleteRecord();\"/>";
+  document.getElementById("data_list").appendChild(tr);
+ }
+ file_path.close();
+}
+
+// checkbox処理：完
+function checkAdd(){
+ // data_listから要素を取得する。
+ var data_list = document.getElementById("data_list");
+ for (var i = 1;i<data_list.rows.length;i++){
+  // チェックボックス付けたものをキャッチする。
+  if (data_list.rows(i).getElementsByTagName("input")[0].checked == true){
+   // 横ループ
+   for(var j = 0;j<data_list.rows[i].cells.length;j++){
+    switch(j){
+     case 1:
+      var input_nen = data_list.rows[i].cells[j].innerHTML; // 年齢
+      break;
+     case 2:
+      var input_money = data_list.rows[i].cells[j].innerHTML; // 年収
+      break;
+     case 3:
+      var input_rest = data_list.rows[i].cells[j].innerHTML; // 休日
+      break;
+     case 4:
+      var input_dotime = data_list.rows[i].cells[j].innerHTML; // 勤務時間
+      break;
+     case 5:
+      var input_overtime = data_list.rows[i].cells[j].innerHTML; // 残業時間
+      break;
+     case 6:
+      var input_rostime = data_list.rows[i].cells[j].innerHTML; // 通勤時間
+      break;
+     case 7:
+      var input_rosmoney = data_list.rows[i].cells[j].innerHTML; // 家賃
+      break;
+    }
+   }
+  }
+ }
+ simulate_output(input_nen,input_money,input_rest,input_rest,input_dotime,input_overtime,input_rostime,input_rosmoney); //表示
+}
+
+</script>
+<footer>
+ <center><p>Copyright (C)&nbsp; 2018 時給シミュレーター 辛い人</p></center>
+</footer>
+</body>
+</html>

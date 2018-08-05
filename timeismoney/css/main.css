@@ -1,0 +1,49 @@
+body{
+ background-color: rgb(240,240,255);
+ width: 100%;
+ padding: 0px;
+ margin: 3% 0px;
+}
+
+table{
+ margin: 20px 0px 0px 0px;
+}
+
+th{
+ background-color: rgb(255,255,255); // îíÇ…ÇµÇΩÇ¢
+}
+
+tr{
+ background-color: rgb(255,255,225); // ê¬Ç…ÇµÇΩÇ¢
+}
+
+td text{
+ box-sizing:border-box;
+ width: 100%;
+}
+
+td input{
+ box-sizing:border-box;
+ width: 100%;
+}
+
+#zikko{
+ margin: 20px;
+}
+
+.soe{
+ background-color: rgb(255,255,255);
+}
+
+h1{
+ font-size: 50px;
+ background-color: rgb(255,200,200);
+ margin: auto;
+ opacity: 0.8;
+}
+
+footer p{
+ margin: 20px 0px 0px 0px;
+ font-size: 15px;
+ background-color: rgb(255,255,255);
+}
